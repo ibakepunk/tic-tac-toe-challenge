@@ -10,7 +10,11 @@ from django.forms.models import model_to_dict
 from game.models import Game
 from game.controller import GameController, ValidationError
 
-class CreateGame(View):
+class GameCollection(View):
+    def get(self, request, *args, **kwargs):
+        games = Game.objects.all()
+        return JsonResponse({'objects': [model_to_dict(game) for game in games], 'count': len(games)})
+
     @method_decorator(csrf_exempt, name='dispatch')
     def post(self, request, *args, **kwargs):
         try:
@@ -29,20 +33,28 @@ class CreateGame(View):
             return JsonResponse({'errors': e.errors}, status=400)
 
 
-class UpdateGame(View):
+class GameView(View):
+    def get(self, request, *args, **kwargs):
+        try:
+            game = Game.objects.get(id=kwargs['id'])
+            return JsonResponse(model_to_dict(game))
+        except Game.DoesNotExist:
+            return JsonResponse({'errors': {'error_code': 'game_not_found'}}, status=404)
+            
     @method_decorator(csrf_exempt, name='dispatch')
     def post(self, request, *args, **kwargs):
         try:
-            game = get_object_or_404(Game, id=kwargs['id'])
+            game = Game.objects.get(id=kwargs['id'], status=Game.IN_PROGRESS)
             new_game_data = json.loads(request.body)
             controller = GameController(game)
             controller.validate_update(new_game_data)
-            game.board = new_game_data['board']
+            controller.game.board = new_game_data['board']
             controller.set_updated_by()
-            controller.set_finished()
-            game.save()
+            controller.set_status()
+            controller.game.save()
             return JsonResponse(model_to_dict(game))
         except ValidationError as e:
             return JsonResponse({'errors': e.errors}, status=400)
         except Game.DoesNotExist:
             return JsonResponse({'errors': {'error_code': 'game_not_found'}}, status=404)
+        

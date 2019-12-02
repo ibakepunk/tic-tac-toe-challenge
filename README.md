@@ -33,28 +33,104 @@ two players, represented by their names as strings
 a board data structure (we are leaving you the choice of what data structure is more appropriate for the task). Keep in mind that this data structure needs to trak the status of each board element. Each element is null if the square is blank, or either 0 or 1 to indicate which player controls the square. 
 
 Server API
-The server should complies with the JSON API specification.
 
 - `GET /api/games`: Return a list of the Games known to the server, as JSON.
+```json
+{
+    "objects": [
+        {
+            "id": 1,
+            "status": "in_progress",
+            "updated_by": "karl",
+            "x_player": "karl",
+            "o_player": "paul",
+            "board": [["x", null, null],
+                      [null, "o", null],
+                      [null, "x", null]
+            ]
+        },
+        {
+            "id": 2,
+            "status": "in_progress",
+            "updated_by": "bob",
+            "x_player": "alice",
+            "o_player": "bob",
+            "board": [[null, null, null],
+                      [null, null, null],
+                      [null, null, null]
+            ]
+        }
+    ],
+    "count": 2
+}
+```
 
+- `POST /api/games`: Create a new `Game`, assigning it an ID and returning the newly created `Game`. To start a new game one must send the players names. The first name in the list plays Xs.
 
-- `POST /api/games`: Create a new `Game`, assigning it an ID and returning the newly created `Game`.
-
+Request payload:
+```json
+{"players": ["karl", "paul"]}
+```
+Response:
+```json
+{
+    "id": 2,
+    "status": "in_progress",
+    "updated_by": "bob",
+    "x_player": "alice",
+    "o_player": "bob",
+    "board": [[null, null, null],
+              [null, null, null],
+              [null, null, null]]
+}
+```
 - `GET /api/games/<id>`: Retrieve a `Game` by its ID, returning a `404` status
   code if no game with that ID exists.
+```json
+{
+    "id": 1,
+    "status": "in_progress",
+    "updated_by": "karl",
+    "x_player": "karl",
+    "o_player": "paul",
+    "board": [["x", null, null],
+              [null, "o", null],
+              [null, "x", null]]
+}
+```
 
-- `POST /api/games/<id>`: Update the `Game` with the given ID, replacing its data with the newly `POST`ed data.
+- `POST /api/games/<id>`: Update the `Game` with the given ID, replacing its data with the newly `POST`ed data. To make a turn player must send their username and an updated board with player's mark (X or O).
 
-## Optional
+Request payload:
+```json
+{
+    "updated_by": "karl",
+    "board": [["x", null, null],
+              [null, null, null],
+              [null, null, null]]
+}
+```
+Response:
+```json
+{
+    "id": 1,
+    "status": "in_progress",
+    "updated_by": "karl",
+    "x_player": "karl",
+    "o_player": "paul",
+    "board": [["x", null, null],
+              [null, null, null],
+              [null, null, null]]
+}
+```
 
-If you have extra time and want to take on an additional challenge, you may choose to implement:
+### Statuses
+There are several possible statuses of the game:
+- `in_progress` indicates that the game is not finished yet.
+- `draw` indicates that the game is finished in a draw.
+- `x` and `o` mean that the game is over and specify the winner.
 
- - viewing & restoring saved games
- - an "AI" player option, where someone can play against the computer
-
-However, please be aware that we'd prefer a more polished implementation to more features!
-
-## Submission
-
-When you are ready, please submit your challenge as a pull request
-against this repository.
+## Running the app
+In order to run the API you're going to need docker-compose installed. There are two containers: `python` runs the Django app and `postgres` stores the game data.
+- `make run` to start the containers and apply initial migrations. The app is ready to use.
+- `docker-compose exec python ./manage.py test game.tests` to run the tests.

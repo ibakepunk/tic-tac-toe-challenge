@@ -46,6 +46,7 @@ class GameController(object):
             if self.game.board[i][j] is not None:
                 errors.append({'field': 'board', 'error_code': 'cant_update_filled_cell'})
 
+            new_board[i][j] = new_board[i][j].lower()
             next_turn = 'x' if self.game.updated_by == self.game.o_player else 'o'
             if new_board[i][j] != next_turn:
                 errors.append({'field': 'updated_by', 'error_code': 'not_your_symbol'})
@@ -101,8 +102,9 @@ class GameController(object):
                     return False
         return True
 
-
-    def set_finished(self):
+    def set_status(self):
         winner = self.get_winner()
-        if winner or self.check_draw():
-            self.game.finished = True
+        if winner:
+            self.game.status = winner
+        elif self.check_draw():
+            self.game.status = Game.DRAW

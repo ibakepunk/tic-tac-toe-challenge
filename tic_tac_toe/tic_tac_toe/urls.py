@@ -15,10 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from game.views import CreateGame, UpdateGame
+from game.views import GameCollection, GameView
 
 
 urlpatterns = [
-    path('games/', CreateGame.as_view()),
-    path('games/<int:id>/', UpdateGame.as_view()),
+    path('api/games/', GameCollection.as_view()),
+    path('api/games/<int:id>/', GameView.as_view()),
 ]

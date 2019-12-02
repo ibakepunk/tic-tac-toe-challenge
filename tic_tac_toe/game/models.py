@@ -14,14 +14,10 @@ class Game(models.Model):
         (O_WON, 'Player O won'),
     )
 
-    finished = models.BooleanField(default=False)
-    status = models.CharField(choices=STATUSES, max_length=32)
+    status = models.CharField(choices=STATUSES, max_length=32, default=IN_PROGRESS)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     updated_by = models.CharField(max_length=140)
     x_player = models.CharField(max_length=140)
     o_player = models.CharField(max_length=140)
     board = JSONField()
-
-    class Meta:
-        app_label = 'game'
