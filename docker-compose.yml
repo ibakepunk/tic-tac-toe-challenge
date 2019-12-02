@@ -1,0 +1,30 @@
+version: '3'
+services:
+  # Application container
+  python:
+    build: .
+    command: gunicorn -w 1 --bind 0.0.0.0:8080 tic_tac_toe.wsgi
+    environment:
+      - DEBUG=1
+      - DATABASE_NAME=tic_tac_toe
+      - DATABASE_USER=anaconda
+      - DATABASE_PASSWORD=anaconda
+      - DATABASE_SERVICE_HOST=postgres
+    volumes:
+      - ./:/tic_tac_toe
+    links:
+      - postgres
+    ports:
+    - "8080:8080"
+    depends_on:
+      - postgres
+  postgres:
+    image: postgres:12.1-alpine
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      LC_ALL: C.UTF-8
+      POSTGRES_USER: anaconda
+      POSTGRES_PASSWORD: anaconda
+      POSTGRES_DB: tic_tac_toe
